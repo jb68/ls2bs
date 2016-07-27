@@ -1,5 +1,5 @@
 # ls2s
-Laptop Snapsots to (Backup) Server using rsync and hard links
+Laptop Snapshots to (Backup) Server using rsync and hard links
 
 Initiall written to back-up snapshots of a mate linux laptop to a Synology Disk Station.
 Based on work done by Mike Rubel http://www.mikerubel.org/computers/rsync_snapshots/
