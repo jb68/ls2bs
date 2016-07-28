@@ -4,19 +4,23 @@
 #----- Config -----
 # Backup server
 HOST='server.sdfdomain.com'
-
+HOST='ds.home.jb68.com'
 # Folder you want to snapshot (most probably your home)
-SRC="/home/jb"
+SRC="/home/jb/"
 
 # Destination on backup server for backups
 DEST="/volume1/homes/jb/_snapshots/thinkpad"
+
+# rsync paths
+LOCAL_RSYNC="/usr/bin/rsync"
+REMOTE_RSYNC="/usr/syno/bin/rsync"
 
 # Weeks to keep 
 KEEP=5
 
 
 # ------------- 
-LOCALAPPDIR='~/.ls2s'
+LOCALAPPDIR="${HOME}/.ls2s"
 LASTRUNFILE="$LOCALAPPDIR/lastSnapshot"
 DISPLAYNAME="Ls2s snapshot tool"
 
@@ -26,7 +30,18 @@ ICON="-i $LOCALAPPDIR/icons/Places-network-server-database-icon.png"
 # create required files 
 if [ ! -d $LOCALAPPDIR ]; then
   mkdir -p $LOCALAPPDIR || exit 1
+  echo "Created dir $LOCALAPPDIR"
 fi
+
+# Create generic include files to snapshot only Documents
+if [ ! -f $LOCALAPPDIR/include ]; then
+  echo "Documents/***" >> $LOCALAPPDIR/include || exit 1
+  echo "include file is missing...."
+  echo "created generic $LOCALAPPDIR/include file"
+  echo "please customize $LOCALAPPDIR/include and rerun this script"
+  exit 0
+fi
+
 if [ ! -f $LASTRUNFILE ]; then
   echo 10000 > $LASTRUNFILE || exit 1
 fi
@@ -100,10 +115,19 @@ notify-send -t 0 $ICON "$DISPLAYNAME" "Performing Backup.. Please wait"
 ssh $HOST $SSHCMD
 
 renice 19 -p $$ &>/dev/null
+#echo "$LOCAL_RSYNC -vah --rsync-path=$REMOTE_RSYNC --delete --include-from=$LOCALAPPDIR/include  --exclude=* --link-dest=$DEST/weekly.1 $SRC $HOST:$DEST/weekly.0"
 
-RESP=$(rsync -ah --stats --delete --include-from=$LOCALDIR/include --exclude=* \
-        --link-dest=$DEST/weekly.1 /home/jb/  $HOST:$DEST/weekly.0/)
-#echo "rsync -vah --delete --exclude=* --include-from=$LOCALDIR/include --link-dest=$DEST/weekly.1 /home/jb/  $HOST:$DEST/weekly.0"
+RESP=$($LOCAL_RSYNC -ah --rsync-path=$REMOTE_RSYNC --stats \
+       --delete --include-from=$LOCALAPPDIR/include --exclude=* \
+       --link-dest=$DEST/weekly.1 $SRC $HOST:$DEST/weekly.0/ 2>&1)
+echo $RESP
+if [ $? -gt 0 ]; then
+   killall mate-notification-daemon
+   notify-send -t 6000 $ICON "$DISPLAYNAME" "Backup Error:
+$RESP"
+   exit 1
+fi
+
 echo $NOW > $LASTRUNFILE || exit 1
 
 killall mate-notification-daemon
