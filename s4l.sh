@@ -4,7 +4,7 @@
 #----- Config -----
 # Backup server
 HOST='server.sdfdomain.com'
-HOST='ds.home.jb68.com'
+
 # Folder you want to snapshot (most probably your home)
 SRC="/home/jb/"
 
@@ -20,9 +20,9 @@ KEEP=5
 
 
 # ------------- 
-LOCALAPPDIR="${HOME}/.ls2s"
+LOCALAPPDIR="${HOME}/.ss4l"
 LASTRUNFILE="$LOCALAPPDIR/lastSnapshot"
-DISPLAYNAME="Ls2s snapshot tool"
+DISPLAYNAME="S4L - Snapshot 4 Laptop"
 
 # Icon for 
 ICON="-i $LOCALAPPDIR/icons/Places-network-server-database-icon.png"
